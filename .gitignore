@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ### AL ###
 #Template for AL projects for Dynamics 365 Business Central
 #launch.json folder
@@ -20,3 +21,6 @@ rad.json
 *.flf
 #Test results file
 TestResults.xml
+=======
+raw_data/
+>>>>>>> c5e74ce (Add raw_data to .gitignore)
