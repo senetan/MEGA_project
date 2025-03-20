@@ -31,9 +31,37 @@ app = FastAPI()
 
 @app.get("/")
 def read_root():
+    """
+    Root endpoint of the API.
+
+    This function is called when a user accesses the root of the API.
+    It returns a welcome message.
+
+    Returns:
+        dict: A welcome message from the API.
+    """
     return {"message": "Welcome on the MEGA API!"}
 
 class PredictionInput(BaseModel):
+    """
+    Input data model for carbon intensity prediction.
+
+    This model defines the structure of the data that the user must provide
+    to make a prediction via the API. It includes different energy sources
+    and the date/time at which the prediction should be made.
+
+    Attributes:
+        datetime (str): The date and time of the prediction in ISO 8601 format.
+        powerConsumptionBreakdown_nuclear (float): Nuclear energy consumption.
+        powerConsumptionBreakdown_geothermal (float): Geothermal energy consumption.
+        powerConsumptionBreakdown_biomass (float): Biomass energy consumption.
+        powerConsumptionBreakdown_coal (float): Coal energy consumption.
+        powerConsumptionBreakdown_wind (float): Wind energy consumption.
+        powerConsumptionBreakdown_solar (float): Solar energy consumption.
+        powerConsumptionBreakdown_hydro (float): Hydroelectric energy consumption.
+        powerConsumptionBreakdown_gas (float): Gas energy consumption.
+        powerConsumptionBreakdown_oil (float): Oil energy consumption.
+    """
     datetime: str = Field(
         ...,
         example="2025-04-12T12:00:00.000Z"
@@ -50,6 +78,19 @@ class PredictionInput(BaseModel):
 
 @app.post("/predict")
 def predict(input_data: PredictionInput):
+    """
+    Make a carbon intensity prediction.
+
+    This function takes the input data provided by the user, transforms
+    it using the feature pipeline, and makes a prediction using the pre-trained model.
+    It then returns the predicted carbon intensity in grams of CO2 per kWh.
+
+    Args:
+        input_data (PredictionInput): Input data containing energy consumption breakdown by source.
+
+    Returns:
+        dict: A dictionary containing the predicted carbon intensity in gCO2eq/kWh or an error message.
+    """
     try:
         data = input_data.model_dump()
         mapping = {
@@ -82,6 +123,12 @@ def predict(input_data: PredictionInput):
 
 # Run Uvicorn
 def main():
+    """
+    Starts the FastAPI application with Uvicorn.
+
+    This function runs the FastAPI application using the Uvicorn server,
+    taking the host and port information from the environment variables.
+    """
     uvicorn.run(app, host=os.getenv("API_HOST"), port=int(os.getenv("API_PORT")))
 
 
