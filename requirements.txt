@@ -70,7 +70,6 @@ matplotlib==3.10.1
 matplotlib-inline==0.1.7
 mccabe==0.7.0
 mdurl==0.1.2
--e git+ssh://git@github.com/senetan/MEGA_project.git@13fc2f96ca774450422356fa70fc00438b00f84b#egg=MEGA_project_folder
 mistune==3.1.2
 ml_dtypes==0.5.1
 namex==0.0.8
