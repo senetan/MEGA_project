@@ -1,14 +1,11 @@
-<<<<<<< HEAD
+
 ### MEGA project ###
 # Ignore Python cache files
 __pycache__/
 *.pyc
 # Ignore build and installation files
 *.egg-info/
-build/
-dist/
 # Ignore service account key file
 service-account-key.json
-=======
+
 raw_data/
->>>>>>> c5e74ce (Add raw_data to .gitignore)
