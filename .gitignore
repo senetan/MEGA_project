@@ -1,11 +1,32 @@
-
-### MEGA project ###
-# Ignore Python cache files
+# === Python ===
 __pycache__/
-*.pyc
-# Ignore build and installation files
-*.egg-info/
-# Ignore service account key file
-service-account-key.json
+*.py[cod]
+*.pyo
 
+# === Environnements virtuels ===
+venv/
+.env
+.envrc
+.python-version
+
+# === Jupyter Notebooks ===
+.ipynb_checkpoints
+
+# === Fichiers de build ===
+*.egg-info/
+dist/
+build/
+
+# === Clé secrète / données sensibles ===
+service-account-key.json
+*.json
+
+# === Données brutes et temporaires ===
 raw_data/
+*.log
+*.tmp
+
+# === IDE / Systèmes ===
+.DS_Store
+.vscode/
+.idea/

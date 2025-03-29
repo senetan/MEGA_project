@@ -7,7 +7,7 @@ import os
 import joblib
 import tensorflow as tf
 from dotenv import load_dotenv
-from google.cloud import bigquery,storage
+from google.cloud import bigquery, storage
 import __main__
 
 __main__.pd = pd
@@ -33,14 +33,12 @@ def load_dataset_from_gcp():
 # Load model and pipeline
 def load_model():
     return {
-        "model": tf.keras.models.load_model(
-            os.getenv("MODEL_PATH"),
-        ),
+        "model": tf.keras.models.load_model(os.getenv("MODEL_PATH")),
         "features_pipeline": joblib.load(os.getenv("PIPELINE_PATH")),
         "target_scaler": joblib.load(os.getenv("TARGET_SCALER")),
     }
 
-model= load_model()
+model = load_model()
 
 # FastAPI app
 app = FastAPI()
@@ -50,29 +48,7 @@ def read_root():
     return {"message": "Welcome on the MEGA API!"}
 
 class PredictionInput(BaseModel):
-    """
-    Input data model for carbon intensity prediction.
-
-    This model defines the structure of the data that the user must provide
-    to make a prediction via the API. It includes different energy sources
-    and the date/time at which the prediction should be made.
-
-    Attributes:
-        datetime (str): The date and time of the prediction in ISO 8601 format.
-        powerConsumptionBreakdown_nuclear (float): Nuclear energy consumption.
-        powerConsumptionBreakdown_geothermal (float): Geothermal energy consumption.
-        powerConsumptionBreakdown_biomass (float): Biomass energy consumption.
-        powerConsumptionBreakdown_coal (float): Coal energy consumption.
-        powerConsumptionBreakdown_wind (float): Wind energy consumption.
-        powerConsumptionBreakdown_solar (float): Solar energy consumption.
-        powerConsumptionBreakdown_hydro (float): Hydroelectric energy consumption.
-        powerConsumptionBreakdown_gas (float): Gas energy consumption.
-        powerConsumptionBreakdown_oil (float): Oil energy consumption.
-    """
-    datetime: str = Field(
-        ...,
-        example="2025-04-12T12:00:00.000Z"
-    )
+    datetime: str = Field(..., example="2025-04-12T12:00:00.000Z")
     powerConsumptionBreakdown_nuclear: float = Field(..., example=50)
     powerConsumptionBreakdown_geothermal: float = Field(..., example=10)
     powerConsumptionBreakdown_biomass: float = Field(..., example=100)
@@ -85,24 +61,43 @@ class PredictionInput(BaseModel):
 
 @app.post("/predict")
 def predict(input_data: PredictionInput):
-
     data = input_data.model_dump()
-
-    # Rename keys to match the model's expected format
     for key in list(data.keys()):
         if "powerConsumptionBreakdown_" in key:
-                data[key.replace("_", ".")] = data.pop(key)
-
-    # Prepare data
+            data[key.replace("_", ".")] = data.pop(key)
     sample_df = pd.DataFrame([data])
     sample_features = model["features_pipeline"].transform(sample_df)
-
-    # Prediction
     pred_scaled = model["model"].predict(sample_features)
     pred = model["target_scaler"].inverse_transform(pred_scaled)
-
-
     return {"predicted_carbon_intensity": f"{float(pred[0][0])} gCO2eq/kWh"}
+
+# === Ajouts minimal pour Streamlit ===
+
+def load_model_and_pipeline():
+    """
+    Fonction d'accès pour Streamlit : retourne le modèle, le pipeline et le scaler.
+    """
+    return model["model"], model["features_pipeline"], model["target_scaler"]
+
+def predict_from_dict(input_data: dict):
+    """
+    Version Streamlit : prend un dictionnaire au lieu d'un objet Pydantic.
+    """
+    try:
+        formatted_data = {
+            key.replace("_", "."): value for key, value in input_data.items()
+        }
+        df = pd.DataFrame([formatted_data])
+        X = model["features_pipeline"].transform(df)
+        y_scaled = model["model"].predict(X)
+        y_pred = model["target_scaler"].inverse_transform(y_scaled)
+        return {
+            "predicted_carbon_intensity": f"{float(y_pred[0][0]):.2f} gCO2eq/kWh"
+        }
+    except Exception as e:
+        return {"error": str(e)}
+
+# === Lancement de l'API ===
 
 def main():
     uvicorn.run(app, host=os.getenv("HOST"), port=int(os.getenv("PORT")))
