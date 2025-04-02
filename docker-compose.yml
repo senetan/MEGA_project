@@ -1,0 +1,35 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mega_api
+    command: uvicorn app.api_file:app --host ${HOST} --port ${PORT} --reload
+    environment:
+      - APP_MODE=api
+    env_file:
+      - .env
+    ports:
+      - "${PORT}:${PORT}"
+    volumes:
+      - .:/app
+    platform: linux/arm64
+
+  streamlit:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mega_ui
+    command: streamlit run app/streamlit_app.py
+    environment:
+      - APP_MODE=streamlit
+    env_file:
+      - .env
+    ports:
+      - "8501:8501"
+    volumes:
+      - .:/app
+    platform: linux/arm64
+
+volumes:
+  mega_data:

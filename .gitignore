@@ -24,17 +24,6 @@ env/
 *.json
 service-account-key.json
 
-# Données & modèles
-*.pkl
-*.keras
-*.h5
-*.csv
-
-# Docker
-.dockerignore
-Dockerfile
-docker-compose.yml
-
 # Tests & logs
 .pytest_cache/
 htmlcov/
