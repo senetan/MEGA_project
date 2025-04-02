@@ -1,11 +1,48 @@
-
-### MEGA project ###
-# Ignore Python cache files
+# Python
 __pycache__/
-*.pyc
-# Ignore build and installation files
-*.egg-info/
-# Ignore service account key file
+*.py[cod]
+*.pyo
+*.pyd
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS / éditeurs
+.DS_Store
+*.swp
+*.swo
+*.bak
+
+# Environnement virtuel
+.venv/
+env/
+.venvrc
+.python-version
+
+# Variables d’environnement et clés
+.env
+*.json
 service-account-key.json
 
-raw_data/
+# Données & modèles
+*.pkl
+*.keras
+*.h5
+*.csv
+
+# Docker
+.dockerignore
+Dockerfile
+docker-compose.yml
+
+# Tests & logs
+.pytest_cache/
+htmlcov/
+*.log
+
+# IDEs
+.vscode/
+.idea/
+
+# Streamlit cache
+.streamlit/
