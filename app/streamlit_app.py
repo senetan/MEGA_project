@@ -1,52 +1,68 @@
 import streamlit as st
-import pandas as pd
+st.set_page_config(page_title="MEGA Predictor", layout="centered")
+
 import numpy as np
+import pandas as pd
 import joblib
 import tensorflow as tf
-from app.models import load_model_and_scalers
-from app.preproc import preprocess_data  # À adapter selon ton fichier
-from app.params import FEATURES  # Liste de variables en entrée si existante
+import os
+from datetime import datetime
+from models import load_model, load_pipeline, load_target_scaler
 
-# Configuration de la page
-st.set_page_config(
-    page_title="MEGA Predictor",
-    page_icon="🤖",
-    layout="centered"
-)
+# === Chargement des artefacts
+model = load_model()
+pipeline = load_pipeline()
+scaler = load_target_scaler()
 
-st.title("💡 MEGA Project — Prédiction intelligente")
+# === Titre
+st.title("🔋 MEGA - Prédiction de la consommation énergétique")
 
-# Chargement des assets ML
-@st.cache_resource
-def load_assets():
-    model, pipeline, target_scaler = load_model_and_scalers()
-    return model, pipeline, target_scaler
+st.markdown("Saisissez la date, l'heure et les productions par énergie pour estimer la consommation.")
 
-model, pipeline, target_scaler = load_assets()
+# === Formulaire utilisateur
 
-# UI — Saisie utilisateur
-st.subheader("Entrez les données à prédire")
-user_input = {}
+col1, col2 = st.columns(2)
 
-for feature in FEATURES:
-    val = st.text_input(f"{feature}", "")
-    user_input[feature] = val
+with col1:
+    date_input = st.date_input("📅 Date", datetime.today())
+with col2:
+    hour_input = st.number_input("🕐 Heure (0-23)", min_value=0, max_value=23, step=1)
 
-# Bouton de prédiction
-if st.button("Prédire"):
+# === Énergies (à adapter selon ton modèle)
+energy_inputs = {}
+st.subheader("⚡️ Production par source d'énergie")
+
+energy_features = [
+    "powerConsumptionBreakdown.nuclear",
+    "powerConsumptionBreakdown.geothermal",
+    "powerConsumptionBreakdown.biomass",
+    "powerConsumptionBreakdown.coal",
+    "powerConsumptionBreakdown.wind",
+    "powerConsumptionBreakdown.solar",
+    "powerConsumptionBreakdown.hydro",
+    "powerConsumptionBreakdown.gas",
+    "powerConsumptionBreakdown.oil"
+]
+
+for feature in energy_features:
+    energy_inputs[feature] = st.number_input(f"{feature}", min_value=0.0, value=100.0, step=100.0)
+
+# === Lancer la prédiction
+if st.button("Prédire la consommation"):
     try:
-        # Convertir l'entrée en DataFrame
-        input_df = pd.DataFrame([user_input])
+        input_dict = {**energy_inputs}
+        input_df = pd.DataFrame([input_dict])
 
-        # Prétraitement
-        X = preprocess_data(input_df, pipeline)
+        # Ajouter la colonne datetime
+        datetime_str = f"{date_input.strftime('%Y-%m-%d')} {hour_input:02d}:00:00"
+        input_df["datetime"] = pd.to_datetime(datetime_str)
 
-        # Prédiction
-        prediction = model.predict(X)
-        prediction = target_scaler.inverse_transform(prediction.reshape(-1, 1))[0][0]
+        # Prétraitement et prédiction
+        X = pipeline.transform(input_df)
+        y_scaled = model.predict(X)
+        y = scaler.inverse_transform(y_scaled.reshape(-1, 1))
 
-        # Affichage
-        st.success(f"🎯 Prédiction du modèle : **{prediction:.2f}**")
+        st.success(f"🔮 Consommation estimée : {y[0][0]:,.2f} MW")
 
     except Exception as e:
-        st.error(f"❌ Erreur lors de la prédiction : {e}")
+        st.error(f"❌ Erreur de prédiction : {str(e)}")

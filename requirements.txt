@@ -1,34 +1,34 @@
-# Core
+# === Core ===
 numpy
 pandas
 scikit-learn
 joblib
 python-dotenv
 
-# Deep Learning
+# === Deep Learning ===
 tensorflow
 keras
 scikeras
 
-# API - FastAPI
+# === API - FastAPI ===
 fastapi
 uvicorn
 
-# UI - Streamlit
+# === Interface - Streamlit ===
 streamlit
 
-# Visualisation & outils
+# === Visualisation ===
 matplotlib
 seaborn
 
-# Google Cloud Platform
+# === Google Cloud Platform ===
 google-cloud-storage
 google-cloud-bigquery
 google-auth
 google-auth-oauthlib
 google-api-core
 
-# Dev / Test / Lint
+# === Dev / Test / Lint ===
 ipykernel
 pytest
 black

@@ -1,44 +1,58 @@
-# === MEGA_project Makefile ===
+# === Variables ===
+PROJECT_NAME=MEGA_project
+API_PORT=8000
+UI_PORT=8501
 
-# Build les images Docker
+# === Docker ===
+
 build:
-	@echo "🔧 Build des images Docker..."
 	docker-compose build
 
-# Lancer les services (API + Streamlit)
-up:
-	@echo "🚀 Lancement de l'API et de Streamlit..."
-	docker-compose up
+up-api:
+	APP_MODE=api docker-compose up -d api
 
-# Lancer en arrière-plan
-up-detached:
-	@echo "🚀 Lancement en arrière-plan..."
+up-ui:
+	APP_MODE=streamlit docker-compose up -d streamlit
+
+down:
+	docker-compose down
+
+logs-api:
+	docker-compose logs -f api
+
+logs-ui:
+	docker-compose logs -f streamlit
+
+# === Test et qualité ===
+
+lint:
+	black . && isort . && pylint app/ || true
+
+test:
+	pytest
+
+# === Utilitaires ===
+
+clean:
+	find . -type f -name '*.pyc' -delete
+	find . -type d -name '__pycache__' -delete
+
+rebuild:
+	docker-compose down -v
+	docker-compose build --no-cache
 	docker-compose up -d
 
-# Arrêter les services
-down:
-	@echo "🛑 Arrêt des services..."
-	docker-compose down
+# === Help ===
 
-# Rebuild + restart complet
-rebuild:
-	@echo "🔁 Rebuild complet..."
-	docker-compose down
-	docker-compose up --build
-
-# Logs
-logs:
-	docker-compose logs -f
-
-# Shell dans le conteneur API
-shell-api:
-	docker exec -it mega_api /bin/bash
-
-# Shell dans le conteneur Streamlit
-shell-streamlit:
-	docker exec -it mega_streamlit /bin/bash
-
-# Nettoyage complet (dangling images, containers, etc.)
-clean:
-	@echo "🧹 Nettoyage Docker..."
-	docker system prune -af --volumes
+help:
+	@echo "Commandes disponibles :"
+	@echo "  build         → Build des containers"
+	@echo "  up-api        → Lancer l'API"
+	@echo "  up-ui         → Lancer l'interface Streamlit"
+	@echo "  down          → Stopper les services"
+	@echo "  test          → Lancer les tests"
+	@echo "  lint          → Formatter et analyser le code"
+	@echo "  clean         → Nettoyer les fichiers inutiles"
+	@echo "  rebuild       → Reconstruire l'environnement complet"
+	@echo "  logs-api      → Logs de l'API"
+	@echo "  logs-ui       → Logs de l'interface Streamlit"

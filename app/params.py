@@ -1,16 +1,24 @@
-import os
-import numpy as np
-from dotenv import load_dotenv
+# === Colonnes numériques utilisées dans le modèle ===
+NUMERICAL_FEATURES = [
+    "feature_1",
+    "feature_2",
+    # Ajoute ici toutes les colonnes numériques pertinentes
+]
 
-load_dotenv()
+# === Colonnes catégorielles ===
+CATEGORICAL_FEATURES = [
+    "feature_3",
+    # Ajoute ici toutes les colonnes catégorielles pertinentes
+]
 
-##################  VARIABLES  ##################
-DATASET = os.environ.get("DATASET")
-MODEL_TARGET = os.environ.get("MODEL_TARGET")
-GCP_PROJECT = os.environ.get("GCP_PROJECT")
-GCP_REGION = os.environ.get("GCP_REGION")
-BQ_REGION = os.environ.get("BQ_REGION")
-BUCKET_NAME = os.environ.get("BUCKET_NAME")
-INSTANCE = os.environ.get("INSTANCE")
-GAR_IMAGE = os.environ.get("GAR_IMAGE")
-GAC_KEY = os.environ.get("GAC_KEY")
+# === Variables inutiles ou à supprimer ===
+DROP_COLUMNS = [
+    "id", "timestamp",
+    # Ajoute ici les colonnes à ignorer
+]
+
+# === Nom de la variable cible ===
+TARGET_COLUMN = "target"
+
+# === Option : seuils, hyperparamètres simples, etc. ===
+THRESHOLD = 0.5  # Exemple pour une classification binaire

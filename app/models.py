@@ -1,92 +1,62 @@
-import tensorflow as tf
-#from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense
-from tensorflow.keras import regularizers, models, layers, Sequential
-#from tensorflow.keras.wrappers.scikit_learn import KerasRegressor
-from scikeras.wrappers import KerasRegressor
-from sklearn.decomposition import PCA
-from sklearn.compose import TransformedTargetRegressor
-from sklearn.metrics import mean_squared_error, mean_absolute_error
-from keras.callbacks import EarlyStopping
-from keras.optimizers import Adam
-from app.app.data import df_de_merged
-from preproc import *
+import os
+import numpy as np
 import joblib
+import tensorflow as tf
+import logging
 
-"""
-- initializes a deep neural network.
-"""
+# Configuration du logger
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
-# initialize model
-def initialize_model(input_shape: tuple):
-    reg = regularizers.l1_l2(l1=0.005)
-    model = models.Sequential()
-    model.add(layers.Input(shape=input_shape))
-    model.add(layers.Dense(100, activation="relu", kernel_regularizer=reg))
-    model.add(layers.BatchNormalization(momentum=0.9))
-    model.add(layers.Dropout(rate=0.1))
-    model.add(layers.Dense(50, activation="relu"))
-    model.add(layers.BatchNormalization(momentum=0.9))
-    model.add(layers.Dropout(rate=0.1))
-    model.add(layers.Dense(1, activation="linear"))
-    print("✅ model initialized")
-    return model
+# === Chemins des artefacts ===
+MODEL_PATH = os.getenv("MODEL_PATH", "models/MEGA_model.keras")
+PIPELINE_PATH = os.getenv("PIPELINE_PATH", "models/features_pipeline.pkl")
+TARGET_SCALER_PATH = os.getenv("TARGET_SCALER", "models/target_scaler.pkl")
 
-input_shape = (X_train_processed.shape[1],)
-model = initialize_model(input_shape)
-model.summary()
+# === Chargement des artefacts ===
 
-# compile model
-learning_rate = 0.0005
-batch_size = 256
-optimizer = Adam(learning_rate=learning_rate)
-model.compile(loss="mean_squared_error", optimizer=optimizer, metrics=["mae"])
+def load_model(model_path: str = MODEL_PATH):
+    try:
+        logger.info(f"Chargement du modèle depuis {model_path}")
+        return tf.keras.models.load_model(model_path)
+    except Exception as e:
+        logger.error(f"Erreur chargement modèle : {e}")
+        raise
 
-# early stopping callback
-es = EarlyStopping(
-    monitor="val_loss",
-    patience=2,
-    restore_best_weights=True,
-    verbose=1
-)
+def load_pipeline(pipeline_path: str = PIPELINE_PATH):
+    try:
+        logger.info(f"Chargement du pipeline depuis {pipeline_path}")
+        return joblib.load(pipeline_path)
+    except Exception as e:
+        logger.error(f"Erreur chargement pipeline : {e}")
+        raise
 
-# train on scaled targets
-history = model.fit(
-    X_train_processed,
-    y_train_scaled,
-    validation_data=(X_val_processed, y_val_scaled),
-    epochs=100,
-    batch_size=batch_size,
-    callbacks=[es],
-    verbose=1
-)
-model_and_pipeline = {
-    'features_pipeline': features_pipeline,
-    'target_scaler': target_scaler
-}
-# export the model
-#model.save('/root/code/senetan/MEGA_project/models/MEGA_model.h5')
+def load_target_scaler(scaler_path: str = TARGET_SCALER_PATH):
+    try:
+        logger.info(f"Chargement du target scaler depuis {scaler_path}")
+        return joblib.load(scaler_path)
+    except Exception as e:
+        logger.error(f"Erreur chargement scaler : {e}")
+        raise
 
-#joblib.dump(features_pipeline, '/root/code/senetan/MEGA_project/models/features_pipeline.pkl')
-#joblib.dump(target_scaler, '/root/code/senetan/MEGA_project/models/target_scaler.pkl')
+# === Fonction de prédiction ===
 
-# evaluate in scaled units
-val_metrics_scaled = model.evaluate(X_val_processed, y_val_scaled, verbose=0)
-test_metrics_scaled = model.evaluate(X_test_processed, y_test_scaled, verbose=0)
-print("mae val (scaled):", round(val_metrics_scaled[1], 2))
-print("mae test (scaled):", round(test_metrics_scaled[1], 2))
+def predict(input_array: np.ndarray) -> float:
+    """
+    input_array : np.array de forme (1, n_features)
+    Retourne une prédiction float déscalée.
+    """
+    try:
+        model = load_model()
+        pipeline = load_pipeline()
+        scaler = load_target_scaler()
 
-# predict on test set (reverse scaled to find back the right, unscaled units)
-y_pred_scaled = model.predict(X_test_processed)
-# inverse transform predictions and test targets to original gco2eq/kwh units
-y_pred = target_scaler.inverse_transform(y_pred_scaled)
-y_test_original = target_scaler.inverse_transform(y_test_scaled)
+        logger.info(f"Input brut : {input_array}")
+        processed = pipeline.transform(input_array)
+        prediction_scaled = model.predict(processed)
+        prediction = scaler.inverse_transform(prediction_scaled.reshape(-1, 1))
 
-mse = mean_squared_error(y_test_original, y_pred)
-mae = mean_absolute_error(y_test_original, y_pred)
-print("mae test (gco2eq/kwh):", round(mae, 2))
-print("mse test (gco2eq/kwh):", round(mse, 2))
-
-# compute the average carbon intensity over the period
-mean_carbon = df_de_merged['carbonIntensity'].mean()
-print("mean carbon intensity (gco2eq/kwh):", round(mean_carbon, 2))
+        return float(prediction[0][0])
+    except Exception as e:
+        logger.error(f"Erreur de prédiction : {e}")
+        raise

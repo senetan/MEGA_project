@@ -1,29 +1,59 @@
+import os
 import pandas as pd
-from MEGA_project_folder.params import *
+import logging
+from google.cloud import storage
+from dotenv import load_dotenv
 
-"""
-basic info
-- prints basic characteristics of the merged dataset.
-"""
-df_de_merged = pd.read_csv("/root/code/senetan/MEGA_project/raw_data/df_de_merged.csv")
+load_dotenv()
 
-print("shape:", df_de_merged.shape)
-print("columns:", df_de_merged.columns.tolist())
-print("df_de_merged data types:")
-print(df_de_merged.dtypes)
+# Logger
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
-nan_counts = df_de_merged.isnull().sum()
-print(nan_counts)
+# === Chemins configurables ===
+LOCAL_DATA_PATH = os.getenv("DATA_PATH", "data/df_de_merged_update_timeline.csv")
+GCP_BUCKET_NAME = os.getenv("BUCKET_NAME")
+GCP_DATASET_PATH = os.getenv("DATASET")  # ex: "path/in/bucket/data.csv"
+GCP_CREDENTIALS = os.getenv("GAC_KEY", "service-account-key.json")
 
-"""
-ensures that df_de_merged is sorted in ascending order by 'datetime'
-"""
+# === Chargement local ===
 
-# ensure the datetime column is in datetime format
-df_de_merged['datetime'] = pd.to_datetime(df_de_merged['datetime'])
+def load_local_data(path: str = LOCAL_DATA_PATH) -> pd.DataFrame:
+    try:
+        logger.info(f"Chargement des données locales depuis {path}")
+        df = pd.read_csv(path)
+        logger.info(f"Données chargées : {df.shape[0]} lignes, {df.shape[1]} colonnes")
+        return df
+    except Exception as e:
+        logger.error(f"Erreur chargement local : {e}")
+        raise
 
-# sort the dataframe chronologically and reset the index
-df_de_merged = df_de_merged.sort_values(by='datetime', ascending=True).reset_index(drop=True)
+# === Chargement depuis GCP ===
 
-#print("df_de_merged sorted in chronological order:")
-#print(df_de_merged.head())
+def load_data_from_gcp(bucket_name: str = GCP_BUCKET_NAME,
+                       blob_path: str = GCP_DATASET_PATH,
+                       credentials_path: str = GCP_CREDENTIALS) -> pd.DataFrame:
+    try:
+        logger.info(f"Connexion à GCP - Bucket: {bucket_name}, Blob: {blob_path}")
+        storage_client = storage.Client.from_service_account_json(credentials_path)
+        bucket = storage_client.get_bucket(bucket_name)
+        blob = bucket.blob(blob_path)
+
+        content = blob.download_as_bytes()
+        df = pd.read_csv(pd.io.common.BytesIO(content))
+
+        logger.info(f"Données chargées depuis GCP : {df.shape}")
+        return df
+    except Exception as e:
+        logger.error(f"Erreur chargement GCP : {e}")
+        raise
+
+# === Interface générique ===
+
+def load_data(source: str = "local") -> pd.DataFrame:
+    """
+    source : 'local' ou 'gcp'
+    """
+    if source == "gcp":
+        return load_data_from_gcp()
+    return load_local_data()

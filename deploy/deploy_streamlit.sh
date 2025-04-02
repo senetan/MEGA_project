@@ -1,35 +1,16 @@
 #!/bin/bash
 
-# ================================
-# 🚀 Streamlit Cloud Run Deploy
-# ================================
+set -e  # Arrêter si une commande échoue
 
-# Paramètres
-PROJECT_ID=your-gcp-project-id
-REGION=europe-west9
-SERVICE_NAME=mega-streamlit
-IMAGE_NAME=gcr.io/$PROJECT_ID/$SERVICE_NAME
-ENV_FILE=.env
+echo "🚀 Lancement de l'interface Streamlit..."
 
-# Authentification (si besoin)
-#gcloud auth login
-#gcloud config set project $PROJECT_ID
+# Vérification du fichier .env
+if [ ! -f .env ]; then
+  echo "❌ Fichier .env introuvable !"
+  exit 1
+fi
 
-echo "🔧 Construction de l'image Streamlit..."
-docker build -t $IMAGE_NAME .
+# Démarrage du service Streamlit
+APP_MODE=streamlit docker-compose up --build -d streamlit
 
-echo "📤 Push de l'image vers Google Container Registry..."
-docker push $IMAGE_NAME
-
-echo "🚀 Déploiement sur Cloud Run..."
-gcloud run deploy $SERVICE_NAME \
-  --image $IMAGE_NAME \
-  --platform managed \
-  --region $REGION \
-  --allow-unauthenticated \
-  --port=8501 \
-  --set-env-vars="$(cat $ENV_FILE | xargs)" \
-  --memory=1Gi \
-  --timeout=600
-
-echo "✅ Streamlit déployé avec succès !"
+echo "✅ Interface MEGA disponible sur http://localhost:8501"
