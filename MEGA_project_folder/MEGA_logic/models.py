@@ -24,10 +24,9 @@ def initialize_model(input_shape: tuple):
     model.add(layers.Input(shape=input_shape))
     model.add(layers.Dense(100, activation="relu", kernel_regularizer=reg))
     model.add(layers.BatchNormalization(momentum=0.9))
-    model.add(layers.Dropout(rate=0.1))
     model.add(layers.Dense(50, activation="relu"))
     model.add(layers.BatchNormalization(momentum=0.9))
-    model.add(layers.Dropout(rate=0.1))
+    model.add(layers.Dropout(rate=0.3))
     model.add(layers.Dense(1, activation="linear"))
     print("✅ model initialized")
     return model
