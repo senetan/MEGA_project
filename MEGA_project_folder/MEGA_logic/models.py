@@ -19,17 +19,29 @@ import joblib
 
 # initialize model
 def initialize_model(input_shape: tuple):
-    reg = regularizers.l1_l2(l1=0.005)
-    model = models.Sequential()
-    model.add(layers.Input(shape=input_shape))
-    model.add(layers.Dense(100, activation="relu", kernel_regularizer=reg))
-    model.add(layers.BatchNormalization(momentum=0.9))
-    model.add(layers.Dense(50, activation="relu"))
-    model.add(layers.BatchNormalization(momentum=0.9))
-    model.add(layers.Dropout(rate=0.3))
-    model.add(layers.Dense(1, activation="linear"))
-    print("✅ model initialized")
-    return model
+     """
+    Initializes a deep neural network model with the given input shape.
+
+    This function defines the architecture of the neural network, including
+    layers, activation functions, and regularization. The model is designed
+    for predicting carbon intensity.
+
+    :param input_shape: The shape of the input data, usually the number of features.
+    :type input_shape: tuple
+    :return: A compiled Keras Sequential model.
+    :rtype: keras.models.Sequential
+    """
+     reg = regularizers.l1_l2(l1=0.005)
+     model = models.Sequential()
+     model.add(layers.Input(shape=input_shape))
+     model.add(layers.Dense(100, activation="relu", kernel_regularizer=reg))
+     model.add(layers.BatchNormalization(momentum=0.9))
+     model.add(layers.Dense(50, activation="relu"))
+     model.add(layers.BatchNormalization(momentum=0.9))
+     model.add(layers.Dropout(rate=0.2))
+     model.add(layers.Dense(1, activation="linear"))
+     print("✅ model initialized")
+     return model
 
 input_shape = (X_train_processed.shape[1],)
 model = initialize_model(input_shape)
@@ -64,7 +76,7 @@ model_and_pipeline = {
     'target_scaler': target_scaler
 }
 # export the model
-#model.save('/root/code/senetan/MEGA_project/models/MEGA_model.h5')
+#model.save('/root/code/senetan/MEGA_project/models/MEGA_model.keras')
 
 #joblib.dump(features_pipeline, '/root/code/senetan/MEGA_project/models/features_pipeline.pkl')
 #joblib.dump(target_scaler, '/root/code/senetan/MEGA_project/models/target_scaler.pkl')

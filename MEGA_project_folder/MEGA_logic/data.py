@@ -5,7 +5,7 @@ from MEGA_project_folder.params import *
 basic info
 - prints basic characteristics of the merged dataset.
 """
-df_de_merged = pd.read_csv("/root/code/senetan/MEGA_project/raw_data/df_de_merged.csv")
+df_de_merged = pd.read_csv("/root/code/senetan/MEGA_project/data/df_de_merged_update_timeline.csv")
 
 print("shape:", df_de_merged.shape)
 print("columns:", df_de_merged.columns.tolist())

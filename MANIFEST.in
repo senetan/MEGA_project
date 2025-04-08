@@ -1,6 +1,6 @@
-include .env .envrc .gitignore
+include .env .envrc .gitignore *.py
 include Dockerfile Makefile README.md requirements.txt
-recursive-include models *.h5 *.pkl
+recursive-include models *.h5 *.pkl *.keras
 recursive-include notebook *.ipynb
-recursive-include raw_data *.csv
+recursive-include data *.csv
 recursive-include MEGA_project_folder *.py
