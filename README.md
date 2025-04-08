@@ -8,7 +8,7 @@ MEGA_project allows you to load a trained ML model to make predictions based on 
 ✅ A graphical user interface (Streamlit)
 
 ⚙️ Tech Stack
-Python 3.11
+Python 3.10.6
 FastAPI + Uvicorn
 Streamlit
 TensorFlow / Keras
