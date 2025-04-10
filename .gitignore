@@ -1,37 +1,8 @@
-# Python
+### MEGA project ###
+# Ignore Python cache files
 __pycache__/
-*.py[cod]
-*.pyo
-*.pyd
-
-# Jupyter
-.ipynb_checkpoints/
-
-# OS / éditeurs
-.DS_Store
-*.swp
-*.swo
-*.bak
-
-# Environnement virtuel
-.venv/
-env/
-.venvrc
-.python-version
-
-# Variables d’environnement et clés
-.env
-*.json
+*.pyc
+# Ignore build and installation files
+*.egg-info/
+# Ignore service account key file
 service-account-key.json
-
-# Tests & logs
-.pytest_cache/
-htmlcov/
-*.log
-
-# IDEs
-.vscode/
-.idea/
-
-# Streamlit cache
-.streamlit/
