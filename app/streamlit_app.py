@@ -1,48 +1,70 @@
 import streamlit as st
+import datetime
 import requests
-import os
-from dotenv import load_dotenv
-from datetime import datetime
+import math
 
-# Load environment variables
-load_dotenv()
-API_URL = os.getenv("API_URL", "http://api:8000/predict")
+# Streamlit page configuration
+st.set_page_config(page_title="Optimize EV charging for carbon - Predicted carbon intensity :germany_flag:next week", page_icon="🌍", layout="centered")
 
-st.set_page_config(
-    page_title="MEGA - Energy Consumption Prediction",
-    page_icon="🔋",
-    layout="centered"
+# API URL
+API_URL = "https://mega-api-2yzrud7e4q-od.a.run.app"
+
+# Define the known last date of data (31/12/2023)
+last_date = datetime.datetime(2023, 12, 31)
+
+# Define the earliest valid date (1st January 2024)
+earliest_valid_date = datetime.datetime(2024, 1, 1)
+
+# Define the latest valid date (7th January 2024)
+latest_valid_date = datetime.datetime(2024, 1, 7)
+
+# Page title
+st.title("Optimize EV charging for carbon - Predicted carbon intensity next week")
+st.markdown("Welcome to the **Carbon Intensity Predictor** 🌱. Choose your energy parameters and get an instant forecast!")
+
+st.sidebar.markdown("## 📅 Select Date and Time")
+
+# Date input in sidebar
+selected_date = st.sidebar.date_input(
+    "Date",
+    value=earliest_valid_date.date(),
+    min_value=earliest_valid_date.date(),
+    max_value=latest_valid_date.date()
 )
 
-st.title("🔋 MEGA - Energy Consumption Prediction")
-st.markdown("Enter the date, hour, and energy production values to get a prediction.")
+# Time input in sidebar
+selected_time = st.sidebar.time_input(
+    "Time",
+    value=datetime.time(12, 0)
+)
 
-# User input form
-with st.form("prediction_form"):
-    date = st.date_input("📅 Date")
-    hour = st.slider("🕐 Hour (0-23)", min_value=0, max_value=23, step=1)
+# Combine into a datetime object
+datetime_obj = datetime.datetime.combine(selected_date, selected_time)
+datetime_input = datetime_obj.isoformat()
 
-    st.markdown("---")
-    st.markdown("### ⚡️ Energy production by source")
+st.sidebar.markdown(f"🕒 Selected datetime (ISO 8601): `{datetime_input}`")
 
-    nuclear = st.number_input("Nuclear (MW)", min_value=0.0, value=100.0)
-    geothermal = st.number_input("Geothermal (MW)", min_value=0.0, value=10.0)
-    biomass = st.number_input("Biomass (MW)", min_value=0.0, value=100.0)
-    coal = st.number_input("Coal (MW)", min_value=0.0, value=100.0)
-    wind = st.number_input("Wind (MW)", min_value=0.0, value=100.0)
-    solar = st.number_input("Solar (MW)", min_value=0.0, value=100.0)
-    hydro = st.number_input("Hydropower (MW)", min_value=0.0, value=100.0)
-    gas = st.number_input("Gas (MW)", min_value=0.0, value=100.0)
-    oil = st.number_input("Oil (MW)", min_value=0.0, value=100.0)
+# Calculate the difference in days between the selected date and the last known date (31/12/2023)
+days_difference = (selected_date - last_date.date()).days
+st.sidebar.write(f"📆 Days from 31/12/2023: {days_difference} days")
 
-    submitted = st.form_submit_button("🚀 Predict Consumption")
+# Energy simulation based on the hour
+def simulate_production(dt):
+    """Returns an estimate of energy production at a given hour"""
+    hour = dt.hour + dt.minute / 60
 
-# Submission logic
-if submitted:
-    datetime_iso = datetime.combine(date, datetime.min.time()).replace(hour=hour).isoformat()
+    # Very simple models based on the daily cycle
+    solar = max(0, math.sin((hour - 6) / 12 * math.pi)) * 800  # Peak around noon
+    wind = 3000 + 1500 * math.sin((hour / 24) * 2 * math.pi)   # Oscillation over 24 hours
+    nuclear = 900  # stable
+    geothermal = 100  # stable
+    biomass = 200  # stable
+    coal = 400 + 100 * math.sin((hour / 24) * 2 * math.pi + 1)
+    hydro = 300 + 100 * math.cos((hour / 24) * 2 * math.pi)
+    gas = 250 + 50 * math.sin((hour / 24) * 2 * math.pi + 2)
+    oil = 50 + 20 * math.sin((hour / 24) * 2 * math.pi + 3)
 
-    payload = {
-        "datetime": datetime_iso + "Z",
+    return {
         "powerConsumptionBreakdown_nuclear": nuclear,
         "powerConsumptionBreakdown_geothermal": geothermal,
         "powerConsumptionBreakdown_biomass": biomass,
@@ -54,18 +76,24 @@ if submitted:
         "powerConsumptionBreakdown_oil": oil,
     }
 
-    st.markdown("📤 Payload sent to the API:")
-    st.json(payload)
 
-    try:
-        response = requests.post(API_URL, json=payload)
-        response.raise_for_status()
-        result = response.json()
+st.markdown("---")
 
-        st.success(f"🎯 Predicted Carbon Intensity: {result['predicted_carbon_intensity']}")
+# Predict button for carbon intensity
+if st.button("🔮 Predict Carbon Intensity"):
+    with st.spinner("⏳ Sending request to the prediction API..."):
+        energy_data = simulate_production(datetime_obj)
+        energy_data["datetime"] = datetime_input
+        try:
+            response = requests.post(f"{API_URL}/predict", json=energy_data)
 
-    except requests.exceptions.HTTPError as http_err:
-        st.error(f"HTTP error: {http_err} - {response.text}")
-
-    except Exception as err:
-        st.error(f"Unexpected error: {err}")
+            if response.text:
+                result = response.json()
+                predicted_value = float(result["predicted_carbon_intensity"].split()[0])
+                st.success(f"🌱 Predicted Carbon Intensity: {predicted_value:.2f} gCO₂eq/kWh")
+            else:
+                st.error("Empty response received from the API.")
+        except requests.exceptions.RequestException as e:
+            st.error(f"❌ Failed to get prediction: {e}")
+        except ValueError:
+            st.error("Error decoding JSON or parsing prediction.")

@@ -11,8 +11,9 @@ clean:
 	rm -rf .pytest_cache
 	rm -rf *.log
 
-# Run the main script
-run:
-	@echo "Running the main script..."
-	pyenv activate MEGA_project
-	python MEGA_project/MEGA_project_folder/api_file.py
+# Built a container
+build_container_local:
+	docker build --tag=${IMAGE}:dev .
+
+run_container_local:
+	docker run -it -e PORT=8000 -p 8080:8000 ${IMAGE}:dev

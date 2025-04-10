@@ -1,33 +1,17 @@
-# 🧠 MEGA_project
+🧠 MEGA_project
+A machine learning project deployed via FastAPI (API), Streamlit (user interface), Docker, and Google Cloud Run ☁️
 
-Un projet de machine learning déployé via **FastAPI** (API), **Streamlit** (interface utilisateur) et **Docker**, prêt à être lancé ou déployé sur **Google Cloud Run** ☁️
+🚀 Objective
+MEGA_project allows you to load a trained ML model to make predictions based on user data, through:
 
----
+✅ A REST API (FastAPI)
+✅ A graphical user interface (Streamlit)
 
-## 🚀 Objectif
-
-MEGA_project permet de charger un modèle ML entraîné pour effectuer des prédictions à partir de données utilisateur, via :
-
-- ✅ Une **API REST** (FastAPI)
-- ✅ Une **interface graphique** (Streamlit)
-
----
-
-## ⚙️ Stack technique
-
-- Python 3.11
-- FastAPI + Uvicorn
-- Streamlit
-- TensorFlow / Keras
-- Scikit-learn
-- Docker / Docker Compose
-- Google Cloud Platform (Cloud Run, GCS)
-
----
-
-## 🧰 Lancement en local (via Docker)
-
-1. **Cloner le repo**
-   ```bash
-   git clone https://github.com/senetan/MEGA_project.git
-   cd MEGA_project
+⚙️ Tech Stack
+Python 3.10.6
+FastAPI + Uvicorn
+Streamlit
+TensorFlow / Keras
+Scikit-learn
+Docker
+Google Cloud Platform (Cloud Run, GCS)

@@ -2,14 +2,14 @@ import pandas as pd
 import numpy as np
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import FunctionTransformer, MinMaxScaler
-from app.app.data import df_de_merged
+from app.data import df_de_merged
 
-"""
+
+def compress_df(df):
+    """
 compress df_de_merged
 - downcasts numeric columns (int64/float64) to lower memory types, except datetime columns.
 """
-
-def compress_df(df):
     df_compressed = df.copy()
     for col in df_compressed.columns:
         # skip datetime columns
@@ -26,15 +26,15 @@ df_de_merged = compress_df(df_de_merged)
 print("compressed dtypes:")
 print(df_de_merged.dtypes)
 
-"""
+
+def extract_time_energy_features(x):
+    """
 cell: feature extraction and normalization (stateless preprocessor)
 - extracts time features (cyclical and one-hot encoded),
 - extracts energy features,
 - computes relative percentages for energy sources (each divided by the row sum),
 - returns a fixed-order dataframe.
 """
-
-def extract_time_energy_features(x):
     x = x.copy()
     # time features
     x['datetime'] = pd.to_datetime(x['datetime'])

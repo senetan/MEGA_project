@@ -23,6 +23,16 @@ gac_key = os.getenv("GAC_KEY")
 
 # Function to load dataset from BigQuery
 def load_dataset_from_gcp():
+    """
+    Loads the dataset from Google Cloud Storage (GCS) into a pandas DataFrame.
+
+    This function connects to Google Cloud Storage using the credentials from
+    the service account JSON file, downloads the dataset from a specified
+    bucket, and reads it into a pandas DataFrame.
+
+    :return: A pandas DataFrame containing the dataset.
+    :rtype: pd.DataFrame
+    """
     client = storage.Client.from_service_account_json(gac_key)
     bucket = client.get_bucket(bucket_name)
     blob = bucket.blob(dataset_path)  # Use dataset path from the .env file
@@ -32,7 +42,18 @@ def load_dataset_from_gcp():
 
 # Load model and pipeline
 def load_model():
-    return {
+ """
+    Loads the machine learning model, feature pipeline, and target scaler from
+    specified paths.
+
+    This function loads the trained model, feature transformation pipeline, and
+    target scaler from disk using joblib and TensorFlow. The paths are read
+    from environment variables.
+
+    :return: A dictionary containing the model, features pipeline, and target scaler.
+    :rtype: dict
+    """
+ return {
         "model": tf.keras.models.load_model(
             os.getenv("MODEL_PATH"),
         ),
@@ -85,6 +106,18 @@ class PredictionInput(BaseModel):
 
 @app.post("/predict")
 def predict(input_data: PredictionInput):
+    """
+    Predicts the carbon intensity based on user-provided data.
+
+    This endpoint accepts a POST request with input data in the form of the
+    `PredictionInput` model. It processes the input data, performs necessary
+    transformations, and makes a prediction using the loaded ML model.
+
+    :param input_data: The data provided by the user for making the prediction.
+    :type input_data: PredictionInput
+    :return: A dictionary containing the predicted carbon intensity.
+    :rtype: dict
+    """
 
     data = input_data.model_dump()
 
@@ -105,7 +138,15 @@ def predict(input_data: PredictionInput):
     return {"predicted_carbon_intensity": f"{float(pred[0][0])} gCO2eq/kWh"}
 
 def main():
-    uvicorn.run(app, host=os.getenv("HOST"), port=int(os.getenv("PORT")))
+     """
+    Starts the FastAPI application using Uvicorn.
+
+    This function runs the FastAPI app on the specified host and port as defined
+    in the environment variables.
+
+    :return: None
+    """
+     uvicorn.run(app, host=os.getenv("HOST"), port=int(os.getenv("PORT")))
 
 if __name__ == "__main__":
     main()
