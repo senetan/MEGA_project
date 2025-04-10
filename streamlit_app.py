@@ -4,33 +4,49 @@ import requests
 import math
 
 # Streamlit page configuration
-st.set_page_config(page_title="Carbon intensity Prediction", page_icon="🌍", layout="centered")
+st.set_page_config(page_title="Optimize EV charging for carbon - Predicted carbon intensity :germany_flag:next week", page_icon="🌍", layout="centered")
 
 # API URL
 API_URL = "https://mega-api-2yzrud7e4q-od.a.run.app"
 
+# Define the known last date of data (31/12/2023)
+last_date = datetime.datetime(2023, 12, 31)
+
+# Define the earliest valid date (1st January 2024)
+earliest_valid_date = datetime.datetime(2024, 1, 1)
+
+# Define the latest valid date (7th January 2024)
+latest_valid_date = datetime.datetime(2024, 1, 7)
+
 # Page title
-st.title("🌍 Carbon intensity Prediction")
+st.title("Optimize EV charging for carbon - Predicted carbon intensity next week")
 st.markdown("Welcome to the **Carbon Intensity Predictor** 🌱. Choose your energy parameters and get an instant forecast!")
 
-# Date and time selection
-with st.expander("📅 Select Date and Time", expanded=True):
-    col1, col2 = st.columns(2)
+st.sidebar.markdown("## 📅 Select Date and Time")
 
-    # Date input
-    with col1:
+# Date input in sidebar
+selected_date = st.sidebar.date_input(
+    "Date",
+    value=earliest_valid_date.date(),
+    min_value=earliest_valid_date.date(),
+    max_value=latest_valid_date.date()
+)
 
-        date_input = st.date_input("Date", value=datetime.date.today())
+# Time input in sidebar
+selected_time = st.sidebar.time_input(
+    "Time",
+    value=datetime.time(12, 0)
+)
 
-    # Time input
-    with col2:
-        default_time = datetime.time(12, 0)
-        time_input = st.time_input("Time", value=default_time)
+# Combine into a datetime object
+datetime_obj = datetime.datetime.combine(selected_date, selected_time)
+datetime_input = datetime_obj.isoformat()
 
-    # Combiner date + heure
-    datetime_obj = datetime.datetime.combine(date_input, time_input)
-    datetime_input = datetime_obj.isoformat()
-    st.markdown(f"🕒 Selected datetime (ISO 8601): `{datetime_input}`")
+st.sidebar.markdown(f"🕒 Selected datetime (ISO 8601): `{datetime_input}`")
+
+# Calculate the difference in days between the selected date and the last known date (31/12/2023)
+days_difference = (selected_date - last_date.date()).days
+st.sidebar.write(f"📆 Days from 31/12/2023: {days_difference} days")
 
 # Energy simulation based on the hour
 def simulate_production(dt):
