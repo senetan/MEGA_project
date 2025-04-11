@@ -10,13 +10,13 @@ st.set_page_config(page_title="Optimize EV charging for carbon - Predicted carbo
 API_URL = "https://mega-api-2yzrud7e4q-od.a.run.app"
 
 # Define the known last date of data (31/12/2023)
-last_date = datetime.datetime(2023, 12, 31)
+last_date = datetime.datetime(2025, 3, 15)
 
 # Define the earliest valid date (1st January 2024)
-earliest_valid_date = datetime.datetime(2024, 1, 1)
+earliest_valid_date = datetime.datetime(2025, 4, 11)
 
 # Define the latest valid date (7th January 2024)
-latest_valid_date = datetime.datetime(2024, 1, 7)
+latest_valid_date = datetime.datetime(2025, 4, 18)
 
 # Page title
 st.title("Optimize EV charging for carbon - Predicted carbon intensity next week")
@@ -46,7 +46,7 @@ st.sidebar.markdown(f"🕒 Selected datetime (ISO 8601): `{datetime_input}`")
 
 # Calculate the difference in days between the selected date and the last known date (31/12/2023)
 days_difference = (selected_date - last_date.date()).days
-st.sidebar.write(f"📆 Days from 31/12/2023: {days_difference} days")
+st.sidebar.write(f"📆 Days from 10/04/2025: {days_difference} days")
 
 # Energy simulation based on the hour
 def simulate_production(dt):
