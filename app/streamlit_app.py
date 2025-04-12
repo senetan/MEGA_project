@@ -126,10 +126,15 @@ for dt, val in top_5:
 qr_img = Image.open("app/streamlit_qr.png")
 st.image(qr_img, caption="Scan to open this app on your phone 📱")
 
-# Google Slides presentation
-st.markdown("### 📽️ MEGA Project Presentation")
+st.markdown("### 📽️ MEGA Project Explainer")
 
+# Full-screen presentation link
+st.markdown("""
+👉 [Click here to open full-screen](https://docs.google.com/presentation/d/e/2PACX-1vTeb2weY1ffOABXNc2SJUpXyxNNTJ0GDX3g8CfEPOIwYipc1MCAfI-8m6b9LQgbtw/pub?start=true&loop=false&delayms=3000)
+""")
+
+# Embedded preview
 st.markdown("""
 <iframe src="https://docs.google.com/presentation/d/e/2PACX-1vTeb2weY1ffOABXNc2SJUpXyxNNTJ0GDX3g8CfEPOIwYipc1MCAfI-8m6b9LQgbtw/pubembed?start=true&loop=false&delayms=3000"
-frameborder="0" width="100%" height="600" scrolling="no" allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true"></iframe>
+frameborder="0" width="100%" height="600" scrolling="no" allowfullscreen="true"></iframe>
 """, unsafe_allow_html=True)
