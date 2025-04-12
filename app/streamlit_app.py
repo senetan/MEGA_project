@@ -92,3 +92,9 @@ if st.button("🔮 Predict Carbon Intensity"):
 from PIL import Image
 qr_img = Image.open("app/streamlit_qr.png")
 st.image(qr_img, caption="Scan to open this app on your phone 📱")
+
+# Run presentation (Google Slides)
+
+st.markdown("""
+<iframe src="https://docs.google.com/presentation/d/e/2PACX-1vTeb2weY1ffOABXNc2SJUpXyxNNTJ0GDX3g8CfEPOIwYipc1MCAfI-8m6b9LQgbtw/pubembed?start=true&loop=false&delayms=3000" frameborder="0" width="1280" height="749" allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true"></iframe>
+""", unsafe_allow_html=True)
