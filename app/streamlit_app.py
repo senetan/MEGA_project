@@ -15,7 +15,7 @@ earliest_valid_date = (now + datetime.timedelta(hours=1)).replace(minute=0, seco
 latest_valid_date = (now + datetime.timedelta(days=7)).replace(hour=0, minute=0, second=0, microsecond=0)
 
 # Page title
-st.title("Optimize EV charging for carbon - Predicted carbon intensity next week")
+st.title("Make EVs Great Again (MEGA) tool: optimize for carbon")
 st.markdown("Welcome to the **EV charging Carbon Intensity Predictor** 🌱. Choose a day and time next week and get an instant forecast!")
 
 st.sidebar.markdown("## 📅 Select Date and Time")
