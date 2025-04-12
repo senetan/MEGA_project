@@ -2,9 +2,15 @@ import streamlit as st
 import datetime
 import requests
 import math
+from PIL import Image
+from datetime import timedelta
 
 # Streamlit page configuration
-st.set_page_config(page_title="Optimize EV charging for carbon - Predicted carbon intensity :germany_flag:next week", page_icon="🌍", layout="centered")
+st.set_page_config(
+    page_title="Optimize EV charging for carbon - Predicted carbon intensity :germany_flag:next week",
+    page_icon="🌍",
+    layout="centered"
+)
 
 # API URL
 API_URL = "https://mega-api-2yzrud7e4q-od.a.run.app"
@@ -39,8 +45,6 @@ datetime_obj = datetime.datetime.combine(selected_date, selected_time)
 datetime_input = datetime_obj.isoformat()
 
 st.sidebar.markdown(f"🕒 Selected datetime (ISO 8601): `{datetime_input}`")
-
-# ✨ Removed "days_difference" and "last_date" output
 
 # Energy simulation based on the hour
 def simulate_production(dt):
@@ -88,13 +92,41 @@ if st.button("🔮 Predict Carbon Intensity"):
         except ValueError:
             st.error("Error decoding JSON or parsing prediction.")
 
-# Create QR code on streamlit
-from PIL import Image
+# ✨ Smart Pick Section: Show top 5 greenest hours (once per session)
+@st.cache_data
+def get_best_low_carbon_slots():
+    best_slots = []
+    current = earliest_valid_date
+
+    while current < latest_valid_date:
+        if 6 <= current.hour < 22:
+            energy_data = simulate_production(current)
+            energy_data["datetime"] = current.isoformat()
+
+            try:
+                response = requests.post(f"{API_URL}/predict", json=energy_data)
+                if response.ok and response.text:
+                    result = response.json()
+                    predicted_value = float(result["predicted_carbon_intensity"].split()[0])
+                    best_slots.append((current, predicted_value))
+            except:
+                pass
+        current += timedelta(hours=1)
+
+    best_slots.sort(key=lambda x: x[1])
+    return best_slots[:5]
+
+st.markdown("### ⚡ Smart Pick: Best Charging Times This Week")
+
+top_5 = get_best_low_carbon_slots()
+for dt, val in top_5:
+    st.markdown(f"✅ **{dt.strftime('%A %d %B – %H:%M')}** → {val:.2f} gCO₂eq/kWh")
+
+# QR Code
 qr_img = Image.open("app/streamlit_qr.png")
 st.image(qr_img, caption="Scan to open this app on your phone 📱")
 
-# Run presentation (Google Slides)
-
+# Google Slides presentation
 st.markdown("### 📽️ MEGA Project Presentation")
 
 st.markdown("""
