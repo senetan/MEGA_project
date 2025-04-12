@@ -9,18 +9,14 @@ st.set_page_config(page_title="Optimize EV charging for carbon - Predicted carbo
 # API URL
 API_URL = "https://mega-api-2yzrud7e4q-od.a.run.app"
 
-# Define the known last date of data (31/12/2023)
-last_date = datetime.datetime(2025, 3, 15)
-
-# Define the earliest valid date (1st January 2024)
-earliest_valid_date = datetime.datetime(2025, 4, 11)
-
-# Define the latest valid date (7th January 2024)
-latest_valid_date = datetime.datetime(2025, 4, 18)
+# ✨ Set dynamic datetime boundaries
+now = datetime.datetime.now()
+earliest_valid_date = (now + datetime.timedelta(hours=1)).replace(minute=0, second=0, microsecond=0)
+latest_valid_date = (now + datetime.timedelta(days=7)).replace(hour=0, minute=0, second=0, microsecond=0)
 
 # Page title
 st.title("Optimize EV charging for carbon - Predicted carbon intensity next week")
-st.markdown("Welcome to the **Carbon Intensity Predictor** 🌱. Choose your energy parameters and get an instant forecast!")
+st.markdown("Welcome to the **EV charging Carbon Intensity Predictor** 🌱. Choose a day and time next week and get an instant forecast!")
 
 st.sidebar.markdown("## 📅 Select Date and Time")
 
@@ -44,21 +40,16 @@ datetime_input = datetime_obj.isoformat()
 
 st.sidebar.markdown(f"🕒 Selected datetime (ISO 8601): `{datetime_input}`")
 
-# Calculate the difference in days between the selected date and the last known date (31/12/2023)
-days_difference = (selected_date - last_date.date()).days
-st.sidebar.write(f"📆 Days from 10/04/2025: {days_difference} days")
+# ✨ Removed "days_difference" and "last_date" output
 
 # Energy simulation based on the hour
 def simulate_production(dt):
-    """Returns an estimate of energy production at a given hour"""
     hour = dt.hour + dt.minute / 60
-
-    # Very simple models based on the daily cycle
-    solar = max(0, math.sin((hour - 6) / 12 * math.pi)) * 800  # Peak around noon
-    wind = 3000 + 1500 * math.sin((hour / 24) * 2 * math.pi)   # Oscillation over 24 hours
-    nuclear = 900  # stable
-    geothermal = 100  # stable
-    biomass = 200  # stable
+    solar = max(0, math.sin((hour - 6) / 12 * math.pi)) * 800
+    wind = 3000 + 1500 * math.sin((hour / 24) * 2 * math.pi)
+    nuclear = 900
+    geothermal = 100
+    biomass = 200
     coal = 400 + 100 * math.sin((hour / 24) * 2 * math.pi + 1)
     hydro = 300 + 100 * math.cos((hour / 24) * 2 * math.pi)
     gas = 250 + 50 * math.sin((hour / 24) * 2 * math.pi + 2)
@@ -75,7 +66,6 @@ def simulate_production(dt):
         "powerConsumptionBreakdown_gas": gas,
         "powerConsumptionBreakdown_oil": oil,
     }
-
 
 st.markdown("---")
 
@@ -97,3 +87,8 @@ if st.button("🔮 Predict Carbon Intensity"):
             st.error(f"❌ Failed to get prediction: {e}")
         except ValueError:
             st.error("Error decoding JSON or parsing prediction.")
+
+# Create QR code on streamlit
+from PIL import Image
+qr_img = Image.open("app/streamlit_qr.png")
+st.image(qr_img, caption="Scan to open this app on your phone 📱")
