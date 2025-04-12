@@ -99,5 +99,5 @@ st.markdown("### 📽️ MEGA Project Presentation")
 
 st.markdown("""
 <iframe src="https://docs.google.com/presentation/d/e/2PACX-1vTeb2weY1ffOABXNc2SJUpXyxNNTJ0GDX3g8CfEPOIwYipc1MCAfI-8m6b9LQgbtw/pubembed?start=true&loop=false&delayms=3000"
-frameborder="0" width="1280" height="749" allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true"></iframe>
+frameborder="0" width="100%" height="600" scrolling="no" allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true"></iframe>
 """, unsafe_allow_html=True)
